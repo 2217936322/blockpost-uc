@@ -21,8 +21,3 @@ public:
 	std::byte pad[92];
 	Controll_StaticFields* static_fields;
 };
-
-class Controll {
-public:
-	ControllKlass* klass;
-};

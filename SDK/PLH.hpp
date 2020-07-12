@@ -19,7 +19,7 @@ public:
 	float next_frame;
 	std::byte pad03[60];
 	UnityEngine::GameObject* head_bone;
-	UnityEngine::GameObject* body_bone;
+	UnityEngine::GameObject* chest_bone;
 	std::byte pad04[228];
 	bool spawnprotect;
 };
@@ -40,9 +40,4 @@ class PLHKlass {
 public:
 	std::byte pad[92];
 	PLH_StaticFields* static_fields;
-};
-
-class PLH {
-public:
-	PLHKlass* klass;
 };

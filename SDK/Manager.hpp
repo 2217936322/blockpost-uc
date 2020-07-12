@@ -3,10 +3,7 @@
 class Manager {
 public:
 	inline Controll_StaticFields* GetGameControll() {
-		Controll* ClassControll = GameMemory->ClassControll;
-		if (!ClassControll) return nullptr;
-
-		ControllKlass* ClassControll_Klass = ClassControll->klass;
+		ControllKlass* ClassControll_Klass = GameMemory->Controll;
 		if (!ClassControll_Klass) return nullptr;
 
 		Controll_StaticFields* ClassControll_StaticFields = ClassControll_Klass->static_fields;
@@ -18,10 +15,7 @@ public:
 	inline std::vector<PlayerData*> GetPlayers() {
 		this->Player_List.clear();
 
-		PLH* ClassPLH = GameMemory->ClassPLH;
-		if (!ClassPLH) return this->Player_List;
-
-		PLHKlass* ClassPLH_Klass = ClassPLH->klass;
+		PLHKlass* ClassPLH_Klass = GameMemory->PLH;
 		if (!ClassPLH_Klass) return this->Player_List;
 
 		PLH_StaticFields* ClassPLH_StaticFields = ClassPLH_Klass->static_fields;
@@ -44,6 +38,27 @@ public:
 		return this->Player_List;
 	}
 
+	inline void DisableInput(bool value) {
+		static bool restore = false;
+
+		if (UnityEngine::Client::IsConnected())
+			if (value) {
+				UnityEngine::Crosshair::SetCursor(value);
+				UnityEngine::Controll::SetLockAngle(value);
+				UnityEngine::Controll::SetLockAttack(value);
+
+				restore = true;
+			}
+			else
+				if (restore) {
+					UnityEngine::Crosshair::SetCursor(value);
+					UnityEngine::Controll::SetLockAngle(value);
+					UnityEngine::Controll::SetLockAttack(value);
+
+					restore = false;
+				}
+	}
+
 	inline bool TeamCheck(PlayerData* player) {
 		Controll_StaticFields* GameControll = this->GetGameControll();
 		if (!GameControll) return false;
@@ -51,6 +66,10 @@ public:
 
 		return (GameControll->gamemode != GameModes::FREE_FOR_ALL && GameControll->gamemode != GameModes::GUN_GAME) ? player->team != GameControll->local_player->team : true;
 	}
+
+	enum KeyCode {
+		Insert = 277
+	};
 private:
 	std::vector<PlayerData*> Player_List;
 

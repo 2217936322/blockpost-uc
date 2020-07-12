@@ -2,6 +2,19 @@
 
 namespace Offsets {
 	namespace Methods {
+		namespace Controll {
+			inline std::uintptr_t SetLockAttack = Memory::MAKE_RVA(0x6AD070);
+			inline std::uintptr_t SetLockAngle = Memory::MAKE_RVA(0x6AD0D0);
+		}
+
+		namespace Crosshair {
+			inline std::uintptr_t SetCursor = Memory::MAKE_RVA(0x6BAE30);
+		}
+
+		namespace Client {
+			inline std::uintptr_t IsConnected = Memory::MAKE_RVA(0x606AC0);
+		}
+
 		namespace GUIM {
 			inline std::uintptr_t YRES = Memory::MAKE_RVA(0x778350);
 			inline std::uintptr_t DrawBoxBorder = Memory::MAKE_RVA(0x774BC0);
@@ -32,7 +45,8 @@ namespace Offsets {
 	}
 
 	namespace Hooks {
-		inline LPVOID Update = Memory::MAKE_RVA_PTR<LPVOID>(0x6B7BB0);
-		inline LPVOID GUI = Memory::MAKE_RVA_PTR<LPVOID>(0x6A87E0);
+		inline LPVOID Update = Memory::MAKE_RVA_PTR<VOID>(0x6B7BB0);
+		inline LPVOID GUI = Memory::MAKE_RVA_PTR<VOID>(0x6A87E0);
+		inline LPVOID GetKeyUp = Memory::MAKE_RVA_PTR<VOID>(0x34B9B0);
 	}
 }

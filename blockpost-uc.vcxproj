@@ -159,8 +159,19 @@
   <ItemGroup>
     <ClInclude Include="Cheats\Aimbot.hpp" />
     <ClInclude Include="Cheats\ESP.hpp" />
-    <ClInclude Include="Main.h" />
+    <ClInclude Include="Config.hpp" />
+    <ClInclude Include="Hooks.hpp" />
+    <ClInclude Include="ImGui\imconfig.h" />
+    <ClInclude Include="ImGui\imgui.h" />
+    <ClInclude Include="ImGui\imgui_impl_dx11.h" />
+    <ClInclude Include="ImGui\imgui_impl_win32.h" />
+    <ClInclude Include="ImGui\imgui_internal.h" />
+    <ClInclude Include="ImGui\imstb_rectpack.h" />
+    <ClInclude Include="ImGui\imstb_textedit.h" />
+    <ClInclude Include="ImGui\imstb_truetype.h" />
+    <ClInclude Include="Includes.h" />
     <ClInclude Include="Memory.hpp" />
+    <ClInclude Include="Menu.hpp" />
     <ClInclude Include="MinHook\buffer.h" />
     <ClInclude Include="MinHook\hde\hde32.h" />
     <ClInclude Include="MinHook\hde\hde64.h" />
@@ -170,7 +181,7 @@
     <ClInclude Include="MinHook\MinHook.h" />
     <ClInclude Include="MinHook\trampoline.h" />
     <ClInclude Include="SDK\Controll.hpp" />
-    <ClInclude Include="SDK\Il2Cpp.hpp" />
+    <ClInclude Include="SDK\Draw.hpp" />
     <ClInclude Include="SDK\Offsets.hpp" />
     <ClInclude Include="SDK\PLH.hpp" />
     <ClInclude Include="SDK\System.hpp" />
@@ -180,6 +191,13 @@
     <ClInclude Include="Utils.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Hooks.cpp" />
+    <ClCompile Include="ImGui\imgui.cpp" />
+    <ClCompile Include="ImGui\imgui_demo.cpp" />
+    <ClCompile Include="ImGui\imgui_draw.cpp" />
+    <ClCompile Include="ImGui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
+    <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MinHook\buffer.c" />
     <ClCompile Include="MinHook\hde\hde32.c" />

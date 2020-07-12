@@ -1,7 +1,5 @@
 #pragma once
 
-struct UnityEngine_Texture2D_o;
-
 namespace UnityEngine {
 	class Rect {
 	public:
@@ -13,10 +11,35 @@ namespace UnityEngine {
 		float r, g, b, a;
 	};
 
+	class Controll {
+	public:
+		static void SetLockAttack(bool value) {
+			return reinterpret_cast<void(*)(bool)>(Offsets::Methods::Controll::SetLockAttack)(value);
+		}
+
+		static void SetLockAngle(bool value) {
+			return reinterpret_cast<void(*)(bool)>(Offsets::Methods::Controll::SetLockAngle)(value);
+		}
+	};
+
+	class Crosshair {
+	public:
+		static void SetCursor(bool value) {
+			return reinterpret_cast<void(*)(bool)>(Offsets::Methods::Crosshair::SetCursor)(value);
+		}
+	};
+
+	class Client {
+	public:
+		static bool IsConnected() {
+			return reinterpret_cast<bool(*)()>(Offsets::Methods::Client::IsConnected)();
+		}
+	};
+
 	class GUIM {
 	public:
-		static float YRES(float val) {
-			return reinterpret_cast<float(*)(float)>(Offsets::Methods::GUIM::YRES)(val);
+		static float YRES(float value) {
+			return reinterpret_cast<float(*)(float)>(Offsets::Methods::GUIM::YRES)(value);
 		}
 
 		static void DrawBoxBorder(UnityEngine::Rect rect, void* texture, float a) {

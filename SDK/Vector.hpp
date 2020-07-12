@@ -27,21 +27,6 @@ public:
         return Vector3{ this->x + v.x, this->y + v.y, this->z + v.z };
     }
 
-    float length() const
-    {
-        return std::sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
-    }
-
-    float length2D() const
-    {
-        return std::sqrt(this->x * this->x + this->y * this->y);
-    }
-
-    std::string toString() const
-    {
-        return std::string{ "{ x: " + std::to_string(this->x) + ", y: " + std::to_string(this->y) + ", z: " + std::to_string(this->z) + " }" };
-    }
-
     float x, y, z;
 };
 
@@ -57,11 +42,6 @@ public:
         return std::sqrt(this->x * this->x + this->y * this->y);
     }
 
-    std::string toString() const
-    {
-        return std::string{ "{ x: " + std::to_string(this->x) + ", y: " + std::to_string(this->y) + " }" };
-    }
-
 	float x, y;
 };
 
@@ -70,11 +50,6 @@ public:
     operator bool() const
     {
         return this->width || this->height;
-    }
-
-    std::string toString() const
-    {
-        return std::string{ "{ width: " + std::to_string(this->width) + ", height: " + std::to_string(this->height) + " }" };
     }
 
     std::int32_t width, height;

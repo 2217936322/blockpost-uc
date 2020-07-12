@@ -1,13 +1,16 @@
 #pragma once
 
-class Controll;
-class PLH;
+class ControllKlass;
+class PLHKlass;
+
+#define VALIDPAGE_START 0x10000
+#define VALIDPAGE_END 0x7FFFFFFF
 
 class Memory {
 public:
 	Memory() {
-		this->ClassControll = Memory::MAKE_RVA_PTR<Controll*>(0xB2D7B8);
-		this->ClassPLH = Memory::MAKE_RVA_PTR<PLH*>(0xB2D824);
+		this->Controll	= Memory::FindKlass<ControllKlass>("Controll");
+		this->PLH		= Memory::FindKlass<PLHKlass>("PLH");
 	};
 
 	static constexpr auto MAKE_RVA = [](std::uintptr_t address) -> std::uintptr_t
@@ -15,10 +18,9 @@ public:
 		return reinterpret_cast<std::uintptr_t>(GetModuleHandleA("GameAssembly")) + address;
 	};
 
-	template <typename T>
-	static constexpr auto MAKE_RVA_PTR = [](std::uintptr_t address) -> T
+	template <class T> static constexpr auto MAKE_RVA_PTR = [](std::uintptr_t address) -> T*
 	{
-		T RVAddress = reinterpret_cast<T>(reinterpret_cast<std::uintptr_t>(GetModuleHandleA("GameAssembly")) + address);
+		T* RVAddress = reinterpret_cast<T*>(reinterpret_cast<std::uintptr_t>(GetModuleHandleA("GameAssembly")) + address);
 
 		if (!RVAddress)
 			Utils::EXIT_FAILURE_WITH_MSG("Wrong RVA (outdated?)");
@@ -26,8 +28,68 @@ public:
 		return RVAddress;
 	};
 
-	Controll* ClassControll;
-	PLH* ClassPLH;
+	template <class T> static T* FindKlass(const std::string& KlassName) { // from github@rexyrexy
+		auto IsValidPage = [](std::uint32_t Pointer) -> bool {
+			if (Pointer < VALIDPAGE_START || Pointer > VALIDPAGE_END) return false;
+
+			std::unique_ptr<MEMORY_BASIC_INFORMATION> MEMORY_INFORMATION = std::make_unique<MEMORY_BASIC_INFORMATION>();
+
+			if (!VirtualQuery(reinterpret_cast<void*>(Pointer), MEMORY_INFORMATION.get(), sizeof(MEMORY_BASIC_INFORMATION))) return false;
+
+			return MEMORY_INFORMATION->Protect > PAGE_NOACCESS;
+		};
+
+		static std::uintptr_t GameAssembly = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("GameAssembly"));
+
+		PIMAGE_SECTION_HEADER DataSection = nullptr, NextDataSection = nullptr;
+
+		PIMAGE_NT_HEADERS NT_HEADERS = reinterpret_cast<PIMAGE_NT_HEADERS>(GameAssembly + reinterpret_cast<PIMAGE_DOS_HEADER>(GameAssembly)->e_lfanew);
+		PIMAGE_SECTION_HEADER SECTION_HEADER = IMAGE_FIRST_SECTION(NT_HEADERS);
+
+		for (; SECTION_HEADER; ++SECTION_HEADER)
+			if (!std::strcmp(reinterpret_cast<const char*>(SECTION_HEADER->Name), ".data")) {
+				DataSection = SECTION_HEADER;
+				NextDataSection = SECTION_HEADER + 1;
+				break;
+			}
+
+		if (!DataSection || !NextDataSection) return nullptr;
+
+		DWORD DataBase = GameAssembly + DataSection->VirtualAddress;
+		DWORD DataSize = NextDataSection->VirtualAddress - DataSection->VirtualAddress - sizeof(uintptr_t);
+
+		for (size_t Offset = DataSize; Offset; Offset -= sizeof(uintptr_t)) {
+			DWORD CurrentData = DataBase + Offset;
+
+			std::uint32_t Klass = *reinterpret_cast<std::uint32_t*>(CurrentData);
+			if (!Klass) continue;
+			if (!IsValidPage(Klass)) continue;
+
+			std::uint32_t KlassNamePtr = *reinterpret_cast<std::uint32_t*>(Klass + 0x8);
+			if (!KlassNamePtr) continue;
+			if (!IsValidPage(KlassNamePtr)) continue;
+
+			if (!std::strcmp(reinterpret_cast<const char*>(KlassNamePtr), KlassName.c_str())) {
+				std::printf("%s: %p\n", KlassName.c_str(), reinterpret_cast<T*>(Klass));
+				return reinterpret_cast<T*>(Klass);
+			}
+		}
+
+		Utils::EXIT_FAILURE_WITH_MSG(std::string{ KlassName + " not found" });
+		return nullptr;
+	}
+
+	template <class T> static VOID SAFE_RELEASE(T*& Pointer)
+	{
+		if (Pointer)
+		{
+			Pointer->Release();
+			Pointer = nullptr;
+		}
+	}
+
+	ControllKlass* Controll;
+	PLHKlass* PLH;
 };
 
 inline std::unique_ptr<const Memory> GameMemory;
