@@ -22,6 +22,7 @@ private:
 	static inline IDXGISwapChain* SwapChain = nullptr;
 
 	static inline WNDPROC WND_PROC = nullptr;
+	static inline HWND GAME_HWND = nullptr;
 
 	static inline std::add_pointer_t<VOID CDECL(LPVOID instance)> Original_OnUpdate = nullptr;
 	static inline std::add_pointer_t<VOID CDECL(LPVOID instance)> Original_OnGUI = nullptr;

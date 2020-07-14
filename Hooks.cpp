@@ -19,18 +19,15 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 		if (SUCCEEDED(SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<LPVOID*>(&Hooks::DX11Device))))
 			DX11Device->GetImmediateContext(&Hooks::DX11DeviceContext);
 
-		DXGI_SWAP_CHAIN_DESC SwapChainDesc;
-		SwapChain->GetDesc(&SwapChainDesc);
-
-		ImGui_ImplWin32_Init(SwapChainDesc.OutputWindow);
+		ImGui_ImplWin32_Init(Hooks::GAME_HWND);
+		ImGui_ImplDX11_Init(Hooks::DX11Device, Hooks::DX11DeviceContext);
 
 		ImGui::StyleColorsDark();
 
-		Hooks::WND_PROC = WNDPROC(SetWindowLongPtrA(FindWindowA("UnityWndClass", "BLOCKPOST"), GWLP_WNDPROC, LONG_PTR(Hooks::WndProc)));
+		Hooks::WND_PROC = WNDPROC(SetWindowLongPtrA(Hooks::GAME_HWND, GWLP_WNDPROC, LONG_PTR(Hooks::WndProc)));
 	}
-	else
-	{
-		ID3D11Texture2D* RenderTargetTexture = nullptr;
+	else {
+		static ID3D11Texture2D* RenderTargetTexture = nullptr;
 
 		if (!Hooks::DX11RenderTargetView)
 			if (SUCCEEDED(SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&RenderTargetTexture))))
@@ -40,12 +37,10 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 			}
 	}
 
-	DXGI_SWAP_CHAIN_DESC SwapChainDesc;
-	SwapChain->GetDesc(&SwapChainDesc);
-
-	DXGI_MODE_DESC BufferDesc = SwapChainDesc.BufferDesc;
-
-	ImGui_ImplDX11_Init(Hooks::DX11Device, Hooks::DX11DeviceContext);
+	Resolution ScreenResolution = {
+		static_cast<std::int32_t>(ImGui::GetIO().DisplaySize.x * ImGui::GetIO().DisplayFramebufferScale.x),
+		static_cast<std::int32_t>(ImGui::GetIO().DisplaySize.y * ImGui::GetIO().DisplayFramebufferScale.y)
+	};
 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -54,7 +49,7 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 	Menu::Render();
 
 	if (Config::Aimbot::DrawFov && UnityEngine::Client::IsConnected())
-		Draw::Circle(Vector2{ BufferDesc.Width / 2.f, BufferDesc.Height / 2.f }, Config::Aimbot::Fov, UnityEngine::Color{ 255.f, 255.f, 255.f, 255.f }, 180);
+		Draw::Circle(Vector2{ ScreenResolution.width / 2.f, ScreenResolution.height / 2.f }, Config::Aimbot::Fov, UnityEngine::Color{ 255.f, 255.f, 255.f, 255.f }, 180);
 
 	Hooks::DX11DeviceContext->OMSetRenderTargets(1, &Hooks::DX11RenderTargetView, nullptr);
 	ImGui::EndFrame();
@@ -69,6 +64,8 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 
 DWORD WINAPI Hooks::HookDirectX11()
 {
+	Hooks::GAME_HWND = FindWindowA("UnityWndClass", "BLOCKPOST");
+
 	D3D_FEATURE_LEVEL D3DLevel = D3D_FEATURE_LEVEL_11_0, ObtainedLevel;
 
 	DXGI_SWAP_CHAIN_DESC SwapChainDesc;
@@ -80,12 +77,15 @@ DWORD WINAPI Hooks::HookDirectX11()
 		SwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 		SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		SwapChainDesc.OutputWindow = FindWindowA("UnityWndClass", "BLOCKPOST");
+		SwapChainDesc.OutputWindow = Hooks::GAME_HWND;
 		SwapChainDesc.SampleDesc.Count = 1;
 		SwapChainDesc.Windowed = true;
 		SwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 		SwapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 		SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+		SwapChainDesc.BufferDesc.Width = UnityEngine::Screen::GetResolution().width;
+		SwapChainDesc.BufferDesc.Height = UnityEngine::Screen::GetResolution().height;
 	}
 
 	HRESULT DeviceAndSwapChain = D3D11CreateDeviceAndSwapChain(nullptr,
@@ -148,9 +148,12 @@ VOID Hooks::Initialize() const
 
 VOID Hooks::Release() const
 {
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
 	Memory::SAFE_RELEASE(Hooks::DX11Device);
 	Memory::SAFE_RELEASE(Hooks::DX11DeviceContext);
-	Memory::SAFE_RELEASE(Hooks::SwapChain);
 
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();
