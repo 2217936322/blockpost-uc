@@ -16,8 +16,8 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 	{
 		ImGui::CreateContext();
 
-		if (SUCCEEDED(SwapChain->GetDevice(__uuidof(ID3D11Device), reinterpret_cast<LPVOID*>(&Hooks::DX11Device))))
-			DX11Device->GetImmediateContext(&Hooks::DX11DeviceContext);
+		Hooks::GetImmediateContextFromSwapChain(SwapChain);
+		Hooks::CreateRenderTargetView(SwapChain);
 
 		ImGui_ImplWin32_Init(Hooks::GAME_HWND);
 		ImGui_ImplDX11_Init(Hooks::DX11Device, Hooks::DX11DeviceContext);
@@ -25,16 +25,6 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 		ImGui::StyleColorsDark();
 
 		Hooks::WND_PROC = WNDPROC(SetWindowLongPtrA(Hooks::GAME_HWND, GWLP_WNDPROC, LONG_PTR(Hooks::WndProc)));
-	}
-	else {
-		static ID3D11Texture2D* RenderTargetTexture = nullptr;
-
-		if (!Hooks::DX11RenderTargetView)
-			if (SUCCEEDED(SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(&RenderTargetTexture))))
-			{
-				Hooks::DX11Device->CreateRenderTargetView(RenderTargetTexture, nullptr, &Hooks::DX11RenderTargetView);
-				RenderTargetTexture->Release();
-			}
 	}
 
 	Resolution ScreenResolution = {
@@ -55,18 +45,27 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 	ImGui::EndFrame();
 	ImGui::Render();
 
-	Memory::SAFE_RELEASE(Hooks::DX11RenderTargetView);
-
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 	return Hooks::Original_D3D11Present(SwapChain, SyncInterval, Flags);
+}
+
+HRESULT WINAPI Hooks::HookResizeBuffers(IDXGISwapChain* SwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
+{
+	Memory::SAFE_RELEASE(Hooks::DX11RenderTargetView);
+
+	const HRESULT result = Hooks::Original_D3D11ResizeBuffers(SwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+
+	Hooks::CreateRenderTargetView(SwapChain);
+
+	return result;
 }
 
 DWORD WINAPI Hooks::HookDirectX11()
 {
 	Hooks::GAME_HWND = FindWindowA("UnityWndClass", "BLOCKPOST");
 
-	D3D_FEATURE_LEVEL D3DLevel = D3D_FEATURE_LEVEL_11_0, ObtainedLevel;
+	D3D_FEATURE_LEVEL D3DLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 }, ObtainedLevel;
 
 	DXGI_SWAP_CHAIN_DESC SwapChainDesc;
 	{
@@ -91,7 +90,8 @@ DWORD WINAPI Hooks::HookDirectX11()
 	HRESULT DeviceAndSwapChain = D3D11CreateDeviceAndSwapChain(nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
-		FALSE, &D3DLevel, TRUE,
+		FALSE, D3DLevels,
+		sizeof(D3DLevels) / sizeof(D3D_FEATURE_LEVEL),
 		D3D11_SDK_VERSION,
 		&SwapChainDesc, &Hooks::SwapChain,
 		&Hooks::CreateDEVICEDX11Device,
@@ -105,6 +105,9 @@ DWORD WINAPI Hooks::HookDirectX11()
 
 	if (MH_CreateHook(reinterpret_cast<LPVOID>(SwapChainVTable[8]), &Hooks::HookPresent, reinterpret_cast<LPVOID*>(&Hooks::Original_D3D11Present)) != MH_OK)
 		Utils::EXIT_FAILURE_WITH_MSG("DX11 Present Hook Error");
+
+	if (MH_CreateHook(reinterpret_cast<LPVOID>(SwapChainVTable[13]), &Hooks::HookResizeBuffers, reinterpret_cast<LPVOID*>(&Hooks::Original_D3D11ResizeBuffers)) != MH_OK)
+		Utils::EXIT_FAILURE_WITH_MSG("DX11 ResizeBuffers Hook Error");
 
 	return S_OK;
 }

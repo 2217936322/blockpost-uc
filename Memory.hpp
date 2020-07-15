@@ -3,8 +3,12 @@
 class ControllKlass;
 class PLHKlass;
 
+#define STATIC_INLINE static inline
+
 #define VALIDPAGE_START 0x10000
 #define VALIDPAGE_END 0x7FFFFFFF
+
+#define GameAssembly GetModuleHandleA("GameAssembly")
 
 class Memory {
 public:
@@ -15,12 +19,12 @@ public:
 
 	static constexpr auto MAKE_RVA = [](std::uintptr_t address) -> std::uintptr_t
 	{
-		return reinterpret_cast<std::uintptr_t>(GetModuleHandleA("GameAssembly")) + address;
+		return reinterpret_cast<std::uintptr_t>(GameAssembly) + address;
 	};
 
 	template <class T> static constexpr auto MAKE_RVA_PTR = [](std::uintptr_t address) -> T*
 	{
-		T* RVAddress = reinterpret_cast<T*>(reinterpret_cast<std::uintptr_t>(GetModuleHandleA("GameAssembly")) + address);
+		T* RVAddress = reinterpret_cast<T*>(reinterpret_cast<std::uintptr_t>(GameAssembly) + address);
 
 		if (!RVAddress)
 			Utils::EXIT_FAILURE_WITH_MSG("Wrong RVA (outdated?)");
@@ -39,11 +43,11 @@ public:
 			return MEMORY_INFORMATION->Protect > PAGE_NOACCESS;
 		};
 
-		static std::uintptr_t GameAssembly = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("GameAssembly"));
-
 		PIMAGE_SECTION_HEADER DataSection = nullptr, NextDataSection = nullptr;
 
-		PIMAGE_NT_HEADERS NT_HEADERS = reinterpret_cast<PIMAGE_NT_HEADERS>(GameAssembly + reinterpret_cast<PIMAGE_DOS_HEADER>(GameAssembly)->e_lfanew);
+		static std::uintptr_t GameAssemblyAddress = reinterpret_cast<std::uintptr_t>(GameAssembly);
+
+		PIMAGE_NT_HEADERS NT_HEADERS = reinterpret_cast<PIMAGE_NT_HEADERS>(GameAssemblyAddress + reinterpret_cast<PIMAGE_DOS_HEADER>(GameAssemblyAddress)->e_lfanew);
 		PIMAGE_SECTION_HEADER SECTION_HEADER = IMAGE_FIRST_SECTION(NT_HEADERS);
 
 		for (; SECTION_HEADER; ++SECTION_HEADER)
@@ -55,7 +59,7 @@ public:
 
 		if (!DataSection || !NextDataSection) return nullptr;
 
-		DWORD DataBase = GameAssembly + DataSection->VirtualAddress;
+		DWORD DataBase = GameAssemblyAddress + DataSection->VirtualAddress;
 		DWORD DataSize = NextDataSection->VirtualAddress - DataSection->VirtualAddress - sizeof(uintptr_t);
 
 		for (size_t Offset = DataSize; Offset; Offset -= sizeof(uintptr_t)) {
