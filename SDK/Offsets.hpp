@@ -32,6 +32,12 @@ namespace Offsets {
 
 		namespace Camera {
 			inline std::uintptr_t WorldToScreen = Memory::MAKE_RVA(0x343640);
+			inline std::uintptr_t FieldOfView = Memory::MAKE_RVA(0x343BB0);
+			inline std::uintptr_t SetFieldOfView = Memory::MAKE_RVA(0x344350);
+		}
+
+		namespace Physics {
+			inline std::uintptr_t Linecast = Memory::MAKE_RVA(0x5CB740);
 		}
 
 		namespace Transform {

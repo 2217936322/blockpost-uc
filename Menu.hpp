@@ -11,6 +11,7 @@ namespace Menu {
 		ImGui::Checkbox("Enabled", &Config::Aimbot::Enabled);
 		ImGui::SameLine();
 		ImGui::Checkbox("Draw Fov", &Config::Aimbot::DrawFov);
+		ImGui::Checkbox("Visible check", &Config::Aimbot::Visible);
 
 		ImGui::SliderFloat("Fov", &Config::Aimbot::Fov, 10.0f, 360.0f, "%.2f", 1.f);
 		ImGui::Combo("Bone", &Config::Aimbot::Bone, "Head\0Chest\0");
@@ -33,6 +34,12 @@ namespace Menu {
 		}
 	}
 
+	inline void MiscWindow() {
+		ImGui::PushItemWidth(200);
+
+		ImGui::SliderFloat("Camera fov", &Config::Misc::CameraFov, 10.0f, 180.0f, "%.2f", 1.f);
+	}
+
 	inline void Render() {
 		if (!Menu::Open) return;
 
@@ -47,6 +54,11 @@ namespace Menu {
 
 			if (ImGui::BeginTabItem("ESP")) {
 				ESPWindow();
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Misc")) {
+				MiscWindow();
 				ImGui::EndTabItem();
 			}
 		}

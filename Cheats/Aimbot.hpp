@@ -45,6 +45,11 @@ public:
 
 			Vector3 HeadPosition = UnityEngine::Transform::GetPosition(Transform);
 
+			if (Config::Aimbot::Visible) {
+				UnityEngine::RaycastHit hit;
+				if (UnityEngine::Physics::Linecast(HeadPosition, GameControll->local_player->current_pos, hit)) continue;
+			}
+
 			if (!GameControll->transform_cam) continue;
 
 			Vector3 CameraPosition = UnityEngine::Transform::GetPosition(GameControll->transform_cam);

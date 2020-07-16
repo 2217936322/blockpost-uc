@@ -11,6 +11,15 @@ namespace UnityEngine {
 		float r, g, b, a;
 	};
 
+	struct RaycastHit {
+		Vector3 Point;
+		Vector3 Normal;
+		std::uint32_t FaceID;
+		float Distance;
+		Vector2 UV;
+		std::int32_t Collider;
+	};
+
 	class Controll {
 	public:
 		static void SetLockAttack(bool value) {
@@ -70,6 +79,21 @@ namespace UnityEngine {
 	public:
 		static Vector3 WorldToScreen(Camera* instance, Vector3 position) {
 			return reinterpret_cast<Vector3(*)(Camera*, Vector3)>(Offsets::Methods::Camera::WorldToScreen)(instance, position);
+		}
+
+		static float FieldOfView(Camera* instance) {
+			return reinterpret_cast<float(*)(Camera*)>(Offsets::Methods::Camera::FieldOfView)(instance);
+		}
+
+		static void SetFieldOfView(Camera* instance, float value) {
+			return reinterpret_cast<void(*)(Camera*, float)>(Offsets::Methods::Camera::SetFieldOfView)(instance, value);
+		}
+	};
+
+	class Physics {
+	public:
+		static bool Linecast(Vector3 start, Vector3 end, RaycastHit& hit_info) {
+			return reinterpret_cast<bool(*)(Vector3, Vector3, RaycastHit&)>(Offsets::Methods::Physics::Linecast)(start, end, hit_info);
 		}
 	};
 

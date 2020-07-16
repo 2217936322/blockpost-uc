@@ -117,6 +117,17 @@ VOID Hooks::OnUpdate(LPVOID instance) {
 
 	GameManager->DisableInput(Menu::Open);
 	Aimbot::Run();
+
+	Controll_StaticFields* GameControll = GameManager->GetGameControll();
+	if (!GameControll) return;
+
+	if (!Config::Misc::CameraFov) {
+		if (GameControll->camera)
+			Config::Misc::CameraFov = UnityEngine::Camera::FieldOfView(GameControll->camera);
+	}
+	else
+		if (GameControll->camera)
+			UnityEngine::Camera::SetFieldOfView(GameControll->camera, Config::Misc::CameraFov);
 }
 
 VOID Hooks::OnGUI(LPVOID instance) {
