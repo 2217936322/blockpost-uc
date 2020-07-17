@@ -17,6 +17,8 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 		ImGui::CreateContext();
 
 		Hooks::GetImmediateContextFromSwapChain(SwapChain);
+		if (!Hooks::DX11Device || !Hooks::DX11DeviceContext) return;
+
 		Hooks::CreateRenderTargetView(SwapChain);
 
 		ImGui_ImplWin32_Init(Hooks::GAME_HWND);
@@ -24,7 +26,8 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 
 		ImGui::StyleColorsDark();
 
-		Hooks::WND_PROC = WNDPROC(SetWindowLongPtrA(Hooks::GAME_HWND, GWLP_WNDPROC, LONG_PTR(Hooks::WndProc)));
+		if (!Hooks::WND_PROC)
+			Hooks::WND_PROC = WNDPROC(SetWindowLongPtrA(Hooks::GAME_HWND, GWLP_WNDPROC, LONG_PTR(Hooks::WndProc)));
 	}
 
 	Resolution ScreenResolution = {
@@ -63,7 +66,8 @@ HRESULT WINAPI Hooks::HookResizeBuffers(IDXGISwapChain* SwapChain, UINT BufferCo
 
 DWORD WINAPI Hooks::HookDirectX11()
 {
-	Hooks::GAME_HWND = FindWindowA("UnityWndClass", "BLOCKPOST");
+	while (!FindWindowA("UnityWndClass", "BLOCKPOST"))
+		Hooks::GAME_HWND = FindWindowA("UnityWndClass", "BLOCKPOST");
 
 	D3D_FEATURE_LEVEL D3DLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 }, ObtainedLevel;
 
