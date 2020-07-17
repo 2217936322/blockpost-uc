@@ -66,8 +66,9 @@ HRESULT WINAPI Hooks::HookResizeBuffers(IDXGISwapChain* SwapChain, UINT BufferCo
 
 DWORD WINAPI Hooks::HookDirectX11()
 {
-	while (FindWindowA("UnityWndClass", "BLOCKPOST"))
-		Hooks::GAME_HWND = FindWindowA("UnityWndClass", "BLOCKPOST");
+	while (!FindWindowA("UnityWndClass", "BLOCKPOST")) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+	Hooks::GAME_HWND = FindWindowA("UnityWndClass", "BLOCKPOST");
 
 	D3D_FEATURE_LEVEL D3DLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 }, ObtainedLevel;
 
