@@ -17,7 +17,7 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 		ImGui::CreateContext();
 
 		Hooks::GetImmediateContextFromSwapChain(SwapChain);
-		if (!Hooks::DX11Device || !Hooks::DX11DeviceContext) return;
+		if (!Hooks::DX11Device || !Hooks::DX11DeviceContext) return Hooks::Original_D3D11Present(SwapChain, SyncInterval, Flags);
 
 		Hooks::CreateRenderTargetView(SwapChain);
 
