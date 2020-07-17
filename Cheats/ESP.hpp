@@ -8,6 +8,10 @@ public:
 		Controll_StaticFields* GameControll = GameManager->GetGameControll();
 		if (!GameControll) return;
 		if (!GameControll->local_player) return;
+		if (!GameControll->transform_cam) return;
+
+		Resolution Resolution = UnityEngine::Screen::GetResolution();
+		if (!Resolution) return;
 
 		ESP::Players = GameManager->GetPlayers();
 
@@ -22,13 +26,42 @@ public:
 			Vector3 OriginW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, Player->current_pos);
 			if (OriginW2S.z < 1.f) continue;
 
-			Resolution Resolution = UnityEngine::Screen::GetResolution();
-			if (!Resolution) continue;
-
 			Vector3 Origin, OriginTextPosition;
 			Origin = OriginTextPosition = Player->current_pos;
 			Origin.y += 0.7f;
 			OriginTextPosition.y += 0.75f;
+
+			UnityEngine::GameObject* GameObject = nullptr;
+
+			switch (Config::Aimbot::Bone)
+			{
+			case 0:
+				GameObject = Player->head_bone;
+				break;
+			case 1:
+				GameObject = Player->chest_bone;
+				break;
+			default:
+				GameObject = Player->head_bone;
+				break;
+			}
+
+			std::vector<Vector3> EdgesOfBone = GameManager->EdgesOfAnObject(GameObject);
+			if (EdgesOfBone.empty()) continue;
+
+			UnityEngine::Color BoxColor{};
+
+			bool LineOfSight = GameManager->MultipleLineOfSight(EdgesOfBone, UnityEngine::Transform::GetPosition(GameControll->transform_cam));
+
+			if (Config::ESP::Visible)
+				if (!LineOfSight) continue;
+
+			if (!Player->spawnprotect && !LineOfSight)
+				BoxColor = Config::ESP::BoxColor;
+			else if (Player->spawnprotect)
+				BoxColor = Config::ESP::SpawnProtectBoxColor;
+			else if (LineOfSight)
+				BoxColor = Config::ESP::VisibleBoxColor;
 
 			if (Config::ESP::Box) {
 				Vector3 BoxOriginW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, Origin);
@@ -40,7 +73,7 @@ public:
 				UnityEngine::GUIM::DrawBoxBorder(UnityEngine::Rect{
 					BoxOriginW2S.x - CalculateBoxWidth / 2.f, Resolution.height - BoxOriginW2S.y,
 					CalculateBoxWidth, CalculateBox
-					}, UnityEngine::Texture::GenerateTexture(Config::ESP::BoxColor, nullptr), 350.f);
+					}, UnityEngine::Texture::GenerateTexture(BoxColor, nullptr), 350.f);
 			}
 
 			if (Config::ESP::Name) {

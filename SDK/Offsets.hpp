@@ -17,6 +17,7 @@ namespace Offsets {
 
 		namespace GUIM {
 			inline std::uintptr_t YRES = Memory::MAKE_RVA(0x778350);
+			inline std::uintptr_t DrawBox = Memory::MAKE_RVA(0x774F10);
 			inline std::uintptr_t DrawBoxBorder = Memory::MAKE_RVA(0x774BC0);
 			inline std::uintptr_t DrawTextColor = Memory::MAKE_RVA(0x776190);
 		}
@@ -42,7 +43,10 @@ namespace Offsets {
 
 		namespace Transform {
 			inline std::uintptr_t GetPosition = Memory::MAKE_RVA(0x59AFB0);
+			inline std::uintptr_t GetRight = Memory::MAKE_RVA(0x59B020);
+			inline std::uintptr_t GetUp = Memory::MAKE_RVA(0x59B220);
 			inline std::uintptr_t GetForward = Memory::MAKE_RVA(0x59A9C0);
+			inline std::uintptr_t GetLocalScale = Memory::MAKE_RVA(0x59AD60);
 		}
 
 		namespace GameObject {

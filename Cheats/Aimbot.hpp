@@ -11,6 +11,8 @@ public:
 		Controll_StaticFields* GameControll = GameManager->GetGameControll();
 		if (!GameControll) return;
 		if (!GameControll->local_player) return;
+		if (!GameControll->camera) return;
+		if (!GameControll->transform_cam) return;
 
 		Aimbot::Players = GameManager->GetPlayers();
 
@@ -20,8 +22,10 @@ public:
 
 			if (!GameManager->TeamCheck(Player)) continue;
 			if (Player->idx == GameControll->local_player->idx) continue;
-			if (Player->spawnprotect) continue;
 			if (Player->health <= 10) continue;
+
+			if(Config::Aimbot::SpawnProtect)
+				if (Player->spawnprotect) continue;
 
 			UnityEngine::GameObject* GameObject = nullptr;
 
@@ -38,26 +42,18 @@ public:
 				break;
 			}
 
-			if (!GameObject) continue;
+			std::vector<Vector3> EdgesOfBone = GameManager->EdgesOfAnObject(GameObject);
+			if (EdgesOfBone.empty()) continue;
 
-			UnityEngine::Transform* Transform = UnityEngine::GameObject::GetTransform(GameObject);
-			if (!Transform) continue;
-
-			Vector3 HeadPosition = UnityEngine::Transform::GetPosition(Transform);
-
-			if (!GameControll->transform_cam) continue;
+			Vector3 HeadPosition = EdgesOfBone[0];
 
 			Vector3 CameraPosition = UnityEngine::Transform::GetPosition(GameControll->transform_cam);
 			Vector3 CameraForward = UnityEngine::Transform::GetForward(GameControll->transform_cam);
 
-			if (Config::Aimbot::Visible) {
-				UnityEngine::RaycastHit hit;
-				if (UnityEngine::Physics::Linecast(HeadPosition, CameraPosition, hit)) continue;
-			}
+			if (Config::Aimbot::Visible)
+				if (!GameManager->MultipleLineOfSight(EdgesOfBone, CameraPosition)) continue;
 
 			CameraPosition += CameraForward;
-
-			if (!GameControll->camera) continue;
 
 			Vector3 HeadW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, HeadPosition);
 			if (HeadW2S.z < 1.f) continue;

@@ -51,6 +51,10 @@ namespace UnityEngine {
 			return reinterpret_cast<float(*)(float)>(Offsets::Methods::GUIM::YRES)(value);
 		}
 
+		static void DrawBox(UnityEngine::Rect rect, void* texture) {
+			return reinterpret_cast<void(*)(UnityEngine::Rect, void*)>(Offsets::Methods::GUIM::DrawBox)(rect, texture);
+		}
+
 		static void DrawBoxBorder(UnityEngine::Rect rect, void* texture, float a) {
 			return reinterpret_cast<void(*)(UnityEngine::Rect, void*, float)>(Offsets::Methods::GUIM::DrawBoxBorder)(rect, texture, a);
 		}
@@ -103,8 +107,20 @@ namespace UnityEngine {
 			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetPosition)(instance);
 		}
 
+		static Vector3 GetRight(Transform* instance) {
+			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetRight)(instance);
+		}
+
+		static Vector3 GetUp(Transform* instance) {
+			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetUp)(instance);
+		}
+
 		static Vector3 GetForward(Transform* instance) {
 			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetForward)(instance);
+		}
+
+		static Vector3 GetLocalScale(Transform* instance) {
+			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetLocalScale)(instance);
 		}
 	};
 

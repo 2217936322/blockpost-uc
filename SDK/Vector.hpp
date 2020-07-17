@@ -27,6 +27,16 @@ public:
 		return Vector3{ this->x + v.x, this->y + v.y, this->z + v.z };
 	}
 
+	Vector3 operator*(const Vector3& v) const
+	{
+		return Vector3{ x * v.x, y * v.y, z * v.z };
+	}
+
+	Vector3 operator*(float mul) const
+	{
+		return Vector3{ x * mul, y * mul, z * mul };
+	}
+
 	float x, y, z;
 };
 

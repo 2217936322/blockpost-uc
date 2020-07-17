@@ -38,6 +38,41 @@ public:
 		return this->Player_List;
 	}
 
+	inline std::vector<Vector3> EdgesOfAnObject(UnityEngine::GameObject* Object) {
+		if (!Object) return std::vector<Vector3>();
+
+		UnityEngine::Transform* Transform = UnityEngine::GameObject::GetTransform(Object);
+		if (!Transform) return std::vector<Vector3>();
+
+		Vector3 ObjectPosition = UnityEngine::Transform::GetPosition(Transform);
+		Vector3 ObjectLocalScale = UnityEngine::Transform::GetLocalScale(Transform);
+
+		Vector3 ObjectLeft = ObjectPosition + UnityEngine::Transform::GetRight(Transform) * (ObjectLocalScale / 2.f);
+		Vector3 ObjectRight = ObjectPosition - UnityEngine::Transform::GetRight(Transform) * (ObjectLocalScale / 2.f);
+
+		Vector3 ObjectUp = ObjectPosition + UnityEngine::Transform::GetUp(Transform) * (ObjectLocalScale / 2.f);
+		Vector3 ObjectDown = ObjectPosition - UnityEngine::Transform::GetUp(Transform) * (ObjectLocalScale / 2.f);
+
+		return std::vector<Vector3>{
+			ObjectPosition, ObjectRight, ObjectLeft, ObjectUp, ObjectDown
+		};
+	}
+
+	inline bool MultipleLineOfSight(std::vector<Vector3> positions, Vector3 src) {
+		static UnityEngine::RaycastHit RaycastHit;
+
+		for (Vector3 position : positions)
+			if (!UnityEngine::Physics::Linecast(position, src, RaycastHit))
+				return true;
+
+		return false;
+	}
+
+	inline bool LineOfSight(Vector3 position, Vector3 src) {
+		static UnityEngine::RaycastHit RaycastHit;
+		return !UnityEngine::Physics::Linecast(position, src, RaycastHit);
+	}
+
 	inline void DisableInput(bool value) {
 		static bool restore = false;
 
