@@ -25,6 +25,7 @@
 #include <Memory.hpp>
 
 #include <SDK/Offsets.hpp>
+#include <SDK/Enums.hpp>
 #include <SDK/System.hpp>
 #include <SDK/Vector.hpp>
 #include <SDK/UnityEngine.hpp>
@@ -38,5 +39,6 @@
 
 #include <Cheats/Aimbot.hpp>
 #include <Cheats/ESP.hpp>
+#include <Cheats/Misc.hpp>
 
 #include <Hooks.hpp>

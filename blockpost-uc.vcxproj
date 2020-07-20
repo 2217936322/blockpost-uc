@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="Cheats\Aimbot.hpp" />
     <ClInclude Include="Cheats\ESP.hpp" />
+    <ClInclude Include="Cheats\Misc.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Hooks.hpp" />
     <ClInclude Include="ImGui\imconfig.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="MinHook\trampoline.h" />
     <ClInclude Include="SDK\Controll.hpp" />
     <ClInclude Include="SDK\Draw.hpp" />
+    <ClInclude Include="SDK\Enums.hpp" />
     <ClInclude Include="SDK\Offsets.hpp" />
     <ClInclude Include="SDK\PLH.hpp" />
     <ClInclude Include="SDK\System.hpp" />

@@ -3,39 +3,47 @@
 class Manager {
 public:
 	inline Controll_StaticFields* GetGameControll() {
-		ControllKlass* ClassControll_Klass = GameMemory->Controll;
-		if (!ClassControll_Klass) return nullptr;
+		ControllKlass* Controll_Klass = GameMemory->Controll;
+		if (!Controll_Klass) return nullptr;
 
-		Controll_StaticFields* ClassControll_StaticFields = ClassControll_Klass->static_fields;
-		if (!ClassControll_StaticFields) return nullptr;
+		Controll_StaticFields* Controll_StaticFields = Controll_Klass->static_fields;
+		if (!Controll_StaticFields) return nullptr;
 
-		return ClassControll_StaticFields;
+		return Controll_StaticFields;
 	}
 
 	inline std::vector<PlayerData*> GetPlayers() {
-		this->Player_List.clear();
+		Manager::Player_List.clear();
 
-		PLHKlass* ClassPLH_Klass = GameMemory->PLH;
-		if (!ClassPLH_Klass) return this->Player_List;
+		PLHKlass* PLH_Klass = GameMemory->PLH;
+		if (!PLH_Klass) return Manager::Player_List;
 
-		PLH_StaticFields* ClassPLH_StaticFields = ClassPLH_Klass->static_fields;
-		if (!ClassPLH_StaticFields) return this->Player_List;
+		PLH_StaticFields* PLH_StaticFields = PLH_Klass->static_fields;
+		if (!PLH_StaticFields) return Manager::Player_List;
 
-		PlayerData_Array* Player_Array = ClassPLH_StaticFields->players;
-		if (!Player_Array) return this->Player_List;
+		PlayerData_Array* Player_Array = PLH_StaticFields->players;
+		if (!Player_Array) return Manager::Player_List;
 
 		std::uintptr_t Player_Array_MaxLength = Player_Array->MaxLength;
-		if (!Player_Array_MaxLength) return this->Player_List;
+		if (!Player_Array_MaxLength) return Manager::Player_List;
 
 		for (size_t i = 0; i < Player_Array_MaxLength; i++)
 		{
 			PlayerData* Player = Player_Array->Items[i];
 			if (!Player) continue;
 
-			this->Player_List.push_back(Player);
+			Manager::Player_List.push_back(Player);
 		}
 
-		return this->Player_List;
+		return Manager::Player_List;
+	}
+
+	inline void ChangeTextureColor(UnityEngine::Texture* texture, UnityEngine::Color color) {
+		for (int i = 0; i < 8; i++)
+			for (int j = 0; j < 8; j++)
+				UnityEngine::Texture::SetPixel(texture, i, j, color);
+
+		UnityEngine::Texture::Apply(texture, true);
 	}
 
 	inline std::vector<Vector3> EdgesOfAnObject(UnityEngine::GameObject* Object) {
@@ -99,19 +107,16 @@ public:
 		if (!GameControll) return false;
 		if (!GameControll->local_player) return false;
 
-		return (GameControll->gamemode != GameModes::FREE_FOR_ALL && GameControll->gamemode != GameModes::GUN_GAME) ? player->team != GameControll->local_player->team : true;
+		switch (GameControll->gamemode)
+		{
+		case Enums::GameModes::FREE_FOR_ALL: return true; break;
+		case Enums::GameModes::GUN_GAME: return true; break;
+		default: return player->team != GameControll->local_player->team; break;
+		}
 	}
-
-	enum KeyCode {
-		Insert = 277
-	};
 private:
-	std::vector<PlayerData*> Player_List;
-
-	enum GameModes {
-		FREE_FOR_ALL = 2,
-		GUN_GAME = 8
-	};
+	std::vector<PlayerData*> Player_List = std::vector<PlayerData*>();
+	std::vector<UnityEngine::Texture*> Texture_List = std::vector<UnityEngine::Texture*>();
 };
 
 inline std::unique_ptr<Manager> GameManager;

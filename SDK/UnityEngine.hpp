@@ -23,111 +23,135 @@ namespace UnityEngine {
 	class Controll {
 	public:
 		static void SetLockAttack(bool value) {
-			return reinterpret_cast<void(*)(bool)>(Offsets::Methods::Controll::SetLockAttack)(value);
+			return Memory::FUNCTION_CAST<void, bool>(Offsets::Methods::Controll::SetLockAttack, value);
 		}
 
 		static void SetLockAngle(bool value) {
-			return reinterpret_cast<void(*)(bool)>(Offsets::Methods::Controll::SetLockAngle)(value);
+			return Memory::FUNCTION_CAST<void, bool>(Offsets::Methods::Controll::SetLockAngle, value);
 		}
 	};
 
 	class Crosshair {
 	public:
 		static void SetCursor(bool value) {
-			return reinterpret_cast<void(*)(bool)>(Offsets::Methods::Crosshair::SetCursor)(value);
+			return Memory::FUNCTION_CAST<void, bool>(Offsets::Methods::Crosshair::SetCursor, value);
 		}
 	};
 
 	class Client {
 	public:
 		static bool IsConnected() {
-			return reinterpret_cast<bool(*)()>(Offsets::Methods::Client::IsConnected)();
+			return Memory::FUNCTION_CAST<bool>(Offsets::Methods::Client::IsConnected);
 		}
 	};
+
+	class Texture;
 
 	class GUIM {
 	public:
 		static float YRES(float value) {
-			return reinterpret_cast<float(*)(float)>(Offsets::Methods::GUIM::YRES)(value);
+			return Memory::FUNCTION_CAST<float>(Offsets::Methods::GUIM::YRES, value);
 		}
 
-		static void DrawBox(UnityEngine::Rect rect, void* texture) {
-			return reinterpret_cast<void(*)(UnityEngine::Rect, void*)>(Offsets::Methods::GUIM::DrawBox)(rect, texture);
+		static void DrawBox(Rect rect, std::add_pointer_t<Texture> texture) {
+			return Memory::FUNCTION_CAST<void, Rect, std::add_pointer_t<Texture>>(Offsets::Methods::GUIM::DrawBox, rect, texture);
 		}
 
-		static void DrawBoxBorder(UnityEngine::Rect rect, void* texture, float a) {
-			return reinterpret_cast<void(*)(UnityEngine::Rect, void*, float)>(Offsets::Methods::GUIM::DrawBoxBorder)(rect, texture, a);
+		static void DrawBoxBorder(Rect rect, std::add_pointer_t<Texture> texture, float alpha) {
+			return Memory::FUNCTION_CAST<void, Rect, std::add_pointer_t<Texture>, float>(Offsets::Methods::GUIM::DrawBoxBorder, rect, texture, alpha);
 		}
 
-		static void DrawTextColor(UnityEngine::Rect rect, SystemString* text, std::int32_t pos, std::int32_t fontcolor, std::int32_t fontpos, std::int32_t fontsize, bool fontshadow) {
-			return reinterpret_cast<void(*)(UnityEngine::Rect, SystemString*, std::int32_t, std::int32_t, std::int32_t, std::int32_t, bool)>(Offsets::Methods::GUIM::DrawTextColor)(rect, text, pos, fontcolor, fontpos, fontsize, fontshadow);
+		static void DrawTextColor(Rect rect, std::add_pointer_t<SystemString> text, std::int32_t pos, std::int32_t fontcolor, std::int32_t fontpos, std::int32_t fontsize, bool fontshadow) {
+			return Memory::FUNCTION_CAST<void, Rect, std::add_pointer_t<SystemString>, std::int32_t, std::int32_t, std::int32_t, std::int32_t, bool>(Offsets::Methods::GUIM::DrawTextColor, rect, text, pos, fontcolor, fontpos, fontsize, fontshadow);
+		}
+	};
+
+	class Input {
+	public:
+		static bool GetKey(Enums::KeyCode key) {
+			return Memory::FUNCTION_CAST<bool, Enums::KeyCode>(Offsets::Methods::Input::GetKey, key);
+		}
+	};
+
+	class Object {
+	public:
+		static std::add_pointer_t<SystemString> GetName(std::add_pointer_t<Object> instance) {
+			return Memory::FUNCTION_CAST<std::add_pointer_t<SystemString>, std::add_pointer_t<Object>>(Offsets::Methods::Object::GetName, instance);
 		}
 	};
 
 	class Texture {
 	public:
-		static void* GenerateTexture(UnityEngine::Color color, SystemString* name) {
-			return reinterpret_cast<void* (*)(UnityEngine::Color, SystemString*)>(Offsets::Methods::Texture::GenerateTexture)(color, name);
+		static std::add_pointer_t<Texture> GenerateTexture(Color color, SystemString* name) {
+			return Memory::FUNCTION_CAST<std::add_pointer_t<Texture>, Color, SystemString*>(Offsets::Methods::Texture::GenerateTexture, color, name);
+		}
+
+		static void SetPixel(std::add_pointer_t<Texture> instance, std::int32_t x, std::int32_t y, Color color) {
+			return Memory::FUNCTION_CAST<void, std::add_pointer_t<Texture>, int32_t, int32_t, Color>(Offsets::Methods::Texture::SetPixel, instance, x, y, color);
+		}
+
+		static void Apply(std::add_pointer_t<Texture> instance, bool UpdateMipmaps) {
+			return Memory::FUNCTION_CAST<void, std::add_pointer_t<Texture>, bool>(Offsets::Methods::Texture::Apply, instance, UpdateMipmaps);
 		}
 	};
 
 	class Screen {
 	public:
 		static Resolution GetResolution() {
-			return { reinterpret_cast<std::int32_t(*)()>(Offsets::Methods::Screen::GetWidth)(),
-				reinterpret_cast<std::int32_t(*)()>(Offsets::Methods::Screen::GetHeight)() };
+			return { Memory::FUNCTION_CAST<std::int32_t>(Offsets::Methods::Screen::GetWidth),
+				Memory::FUNCTION_CAST<std::int32_t>(Offsets::Methods::Screen::GetHeight) };
 		}
 	};
 
 	class Camera {
 	public:
-		static Vector3 WorldToScreen(Camera* instance, Vector3 position) {
-			return reinterpret_cast<Vector3(*)(Camera*, Vector3)>(Offsets::Methods::Camera::WorldToScreen)(instance, position);
+		static Vector3 WorldToScreen(std::add_pointer_t<Camera> instance, Vector3 position) {
+			return Memory::FUNCTION_CAST<Vector3, std::add_pointer_t<Camera>, Vector3>(Offsets::Methods::Camera::WorldToScreen, instance, position);
 		}
 
-		static float FieldOfView(Camera* instance) {
-			return reinterpret_cast<float(*)(Camera*)>(Offsets::Methods::Camera::FieldOfView)(instance);
+		static float FieldOfView(std::add_pointer_t<Camera> instance) {
+			return Memory::FUNCTION_CAST<float, std::add_pointer_t<Camera>>(Offsets::Methods::Camera::FieldOfView, instance);
 		}
 
-		static void SetFieldOfView(Camera* instance, float value) {
-			return reinterpret_cast<void(*)(Camera*, float)>(Offsets::Methods::Camera::SetFieldOfView)(instance, value);
+		static void SetFieldOfView(std::add_pointer_t<Camera> instance, float value) {
+			return Memory::FUNCTION_CAST<void, std::add_pointer_t<Camera>, float>(Offsets::Methods::Camera::SetFieldOfView, instance, value);
 		}
 	};
 
 	class Physics {
 	public:
-		static bool Linecast(Vector3 start, Vector3 end, RaycastHit& hit_info) {
-			return reinterpret_cast<bool(*)(Vector3, Vector3, RaycastHit&)>(Offsets::Methods::Physics::Linecast)(start, end, hit_info);
+		static bool Linecast(Vector3 start, Vector3 end, std::add_lvalue_reference_t<RaycastHit> hit_info) {
+			return Memory::FUNCTION_CAST<bool, Vector3, Vector3, std::add_lvalue_reference_t<RaycastHit>>(Offsets::Methods::Physics::Linecast, start, end, hit_info);
 		}
 	};
 
 	class Transform {
 	public:
-		static Vector3 GetPosition(Transform* instance) {
-			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetPosition)(instance);
+		static Vector3 GetPosition(std::add_pointer_t<Transform> instance) {
+			return Memory::FUNCTION_CAST<Vector3, std::add_pointer_t<Transform>>(Offsets::Methods::Transform::GetPosition, instance);
 		}
 
-		static Vector3 GetRight(Transform* instance) {
-			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetRight)(instance);
+		static Vector3 GetRight(std::add_pointer_t<Transform> instance) {
+			return Memory::FUNCTION_CAST<Vector3, std::add_pointer_t<Transform>>(Offsets::Methods::Transform::GetRight, instance);
 		}
 
-		static Vector3 GetUp(Transform* instance) {
-			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetUp)(instance);
+		static Vector3 GetUp(std::add_pointer_t<Transform> instance) {
+			return Memory::FUNCTION_CAST<Vector3, std::add_pointer_t<Transform>>(Offsets::Methods::Transform::GetUp, instance);
 		}
 
-		static Vector3 GetForward(Transform* instance) {
-			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetForward)(instance);
+		static Vector3 GetForward(std::add_pointer_t<Transform> instance) {
+			return Memory::FUNCTION_CAST<Vector3, std::add_pointer_t<Transform>>(Offsets::Methods::Transform::GetForward, instance);
 		}
 
-		static Vector3 GetLocalScale(Transform* instance) {
-			return reinterpret_cast<Vector3(*)(Transform*)>(Offsets::Methods::Transform::GetLocalScale)(instance);
+		static Vector3 GetLocalScale(std::add_pointer_t<Transform> instance) {
+			return Memory::FUNCTION_CAST<Vector3, std::add_pointer_t<Transform>>(Offsets::Methods::Transform::GetLocalScale, instance);
 		}
 	};
 
 	class GameObject {
 	public:
-		static Transform* GetTransform(GameObject* instance) {
-			return reinterpret_cast<Transform * (*)(GameObject*)>(Offsets::Methods::GameObject::GetTransform)(instance);
+		static std::add_pointer_t<Transform> GetTransform(std::add_pointer_t<GameObject> instance) {
+			return Memory::FUNCTION_CAST<std::add_pointer_t<Transform>, std::add_pointer_t<GameObject>>(Offsets::Methods::GameObject::GetTransform, instance);
 		}
 	};
 }

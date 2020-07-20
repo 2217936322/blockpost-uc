@@ -7,73 +7,62 @@ public:
 
 		Controll_StaticFields* GameControll = GameManager->GetGameControll();
 		if (!GameControll) return;
-		if (!GameControll->local_player) return;
-		if (!GameControll->transform_cam) return;
+		if (!GameControll->local_player || !GameControll->camera || !GameControll->transform_cam) return;
 
 		Resolution Resolution = UnityEngine::Screen::GetResolution();
 		if (!Resolution) return;
 
+		if (!ESP::BoxTexture) ESP::BoxTexture = UnityEngine::Texture::GenerateTexture(ESP::BoxColor, SystemString::CreateString(std::wstring{ L"ESPColor" }).get());
+
 		ESP::Players = GameManager->GetPlayers();
 
-		for (size_t i = 0; i < ESP::Players.size(); i++)
+		for (const auto& Player : ESP::Players)
 		{
-			PlayerData* Player = ESP::Players[i];
-
-			if (!GameManager->TeamCheck(Player)) continue;
-			if (Player->idx == GameControll->local_player->idx) continue;
-			if (Player->health <= 10) continue;
+			if (!GameManager->TeamCheck(Player) || Player->idx == GameControll->local_player->idx || Player->health <= 10) continue;
 
 			Vector3 OriginW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, Player->current_pos);
 			if (OriginW2S.z < 1.f) continue;
 
 			Vector3 Origin, OriginTextPosition;
 			Origin = OriginTextPosition = Player->current_pos;
-			Origin.y += 0.7f;
-			OriginTextPosition.y += 0.75f;
+
+			Origin.y += 0.7f; OriginTextPosition.y += 0.85f;
 
 			UnityEngine::GameObject* GameObject = nullptr;
 
 			switch (Config::Aimbot::Bone)
 			{
-			case 0:
-				GameObject = Player->head_bone;
-				break;
-			case 1:
-				GameObject = Player->chest_bone;
-				break;
-			default:
-				GameObject = Player->head_bone;
-				break;
+			case Enums::Bones::HEAD: GameObject = Player->head_bone; break;
+			case Enums::Bones::CHEST: GameObject = Player->chest_bone; break;
+			default: GameObject = Player->head_bone; break;
 			}
 
 			std::vector<Vector3> EdgesOfBone = GameManager->EdgesOfAnObject(GameObject);
 			if (EdgesOfBone.empty()) continue;
 
-			UnityEngine::Color BoxColor{};
-
 			bool LineOfSight = GameManager->MultipleLineOfSight(EdgesOfBone, UnityEngine::Transform::GetPosition(GameControll->transform_cam));
 
-			if (Config::ESP::Visible)
-				if (!LineOfSight) continue;
+			if (Config::ESP::Visible && !LineOfSight) continue;
 
 			if (!Player->spawnprotect && !LineOfSight)
-				BoxColor = Config::ESP::BoxColor;
+				ESP::BoxColor = Config::ESP::Colors::Box;
 			else if (Player->spawnprotect)
-				BoxColor = Config::ESP::SpawnProtectBoxColor;
+				ESP::BoxColor = Config::ESP::Colors::SpawnProtectBox;
 			else if (LineOfSight)
-				BoxColor = Config::ESP::VisibleBoxColor;
+				ESP::BoxColor = Config::ESP::Colors::VisibleBox;
+
+			GameManager->ChangeTextureColor(ESP::BoxTexture, ESP::BoxColor);
 
 			if (Config::ESP::Box) {
 				Vector3 BoxOriginW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, Origin);
 				if (BoxOriginW2S.z < 1.f) continue;
 
-				float CalculateBox = abs(BoxOriginW2S.y - OriginW2S.y) * 4.f;
-				float CalculateBoxWidth = CalculateBox * 0.65f;
+				float CalculateBox = abs(BoxOriginW2S.y - OriginW2S.y) * 4.f, CalculateBoxWidth = CalculateBox * 0.60f;
 
 				UnityEngine::GUIM::DrawBoxBorder(UnityEngine::Rect{
 					BoxOriginW2S.x - CalculateBoxWidth / 2.f, Resolution.height - BoxOriginW2S.y,
 					CalculateBoxWidth, CalculateBox
-					}, UnityEngine::Texture::GenerateTexture(BoxColor, nullptr), 350.f);
+					}, ESP::BoxTexture, ESP::BoxColor.a);
 			}
 
 			if (Config::ESP::Name) {
@@ -83,10 +72,12 @@ public:
 				UnityEngine::GUIM::DrawTextColor(UnityEngine::Rect{
 						TextOriginW2S.x - UnityEngine::GUIM::YRES(100.f), TextOriginW2S.y - UnityEngine::GUIM::YRES(20.f),
 						UnityEngine::GUIM::YRES(200.f), UnityEngine::GUIM::YRES(20.f)
-					}, Player->name, 7, 1, 1, 10, true);
+					}, Player->name, 7, 1, 1, 8, true);
 			}
 		}
 	}
 private:
-	static inline std::vector<PlayerData*> Players{};
+	STATIC_INLINE std::vector<PlayerData*> Players{};
+	STATIC_INLINE UnityEngine::Texture* BoxTexture = nullptr;
+	STATIC_INLINE UnityEngine::Color BoxColor{ 0.f, 0.f, 0.f, 0.f };
 };

@@ -126,6 +126,12 @@
     <ClInclude Include="SDK\Draw.hpp">
       <Filter>SDK</Filter>
     </ClInclude>
+    <ClInclude Include="SDK\Enums.hpp">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Cheats\Misc.hpp">
+      <Filter>Cheats</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MinHook\trampoline.c">

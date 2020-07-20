@@ -3,59 +3,45 @@
 class Aimbot {
 public:
 	static void Run() {
-		if (!Config::Aimbot::Enabled) return;
-		if (!(GetAsyncKeyState('V') & 0x8000)) return;
-
 		InitializeStaticVariables();
+
+		if (!Config::Aimbot::Enabled) return;
+		if (!UnityEngine::Input::GetKey(Config::Aimbot::Key)) return;
 
 		Controll_StaticFields* GameControll = GameManager->GetGameControll();
 		if (!GameControll) return;
-		if (!GameControll->local_player) return;
-		if (!GameControll->camera) return;
-		if (!GameControll->transform_cam) return;
+		if (!GameControll->local_player || !GameControll->camera || !GameControll->transform_cam) return;
 
 		Aimbot::Players = GameManager->GetPlayers();
 
-		for (size_t i = 0; i < Aimbot::Players.size(); i++)
+		for (const auto& Player : Aimbot::Players)
 		{
-			PlayerData* Player = Aimbot::Players[i];
+			if (!GameManager->TeamCheck(Player) || Player->idx == GameControll->local_player->idx || Player->health <= 10) continue;
 
-			if (!GameManager->TeamCheck(Player)) continue;
-			if (Player->idx == GameControll->local_player->idx) continue;
-			if (Player->health <= 10) continue;
-
-			if(Config::Aimbot::SpawnProtect)
-				if (Player->spawnprotect) continue;
+			if (Config::Aimbot::SpawnProtect && Player->spawnprotect) continue;
 
 			UnityEngine::GameObject* GameObject = nullptr;
 
 			switch (Config::Aimbot::Bone)
 			{
-			case 0:
-				GameObject = Player->head_bone;
-				break;
-			case 1:
-				GameObject = Player->chest_bone;
-				break;
-			default:
-				GameObject = Player->head_bone;
-				break;
+			case Enums::Bones::HEAD: GameObject = Player->head_bone; break;
+			case Enums::Bones::CHEST: GameObject = Player->chest_bone; break;
+			default: GameObject = Player->head_bone; break;
 			}
 
 			std::vector<Vector3> EdgesOfBone = GameManager->EdgesOfAnObject(GameObject);
 			if (EdgesOfBone.empty()) continue;
 
-			Vector3 HeadPosition = EdgesOfBone[0];
+			Vector3 BonePosition = EdgesOfBone[0];
 
 			Vector3 CameraPosition = UnityEngine::Transform::GetPosition(GameControll->transform_cam);
 			Vector3 CameraForward = UnityEngine::Transform::GetForward(GameControll->transform_cam);
 
-			if (Config::Aimbot::Visible)
-				if (!GameManager->MultipleLineOfSight(EdgesOfBone, CameraPosition)) continue;
+			if (Config::Aimbot::Visible && !GameManager->MultipleLineOfSight(EdgesOfBone, CameraPosition)) continue;
 
 			CameraPosition += CameraForward;
 
-			Vector3 HeadW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, HeadPosition);
+			Vector3 HeadW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, BonePosition);
 			if (HeadW2S.z < 1.f) continue;
 
 			Vector3 CameraW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, CameraPosition);
@@ -65,52 +51,26 @@ public:
 
 			if (Camera2D.length() < Aimbot::BestFov) {
 				Aimbot::BestFov = Camera2D.length();
-				Aimbot::Target = Player;
+				Aimbot::Target = BonePosition;
 			}
 		}
 
-		if (Aimbot::Target) {
-			UnityEngine::GameObject* GameObject = nullptr;
-
-			switch (Config::Aimbot::Bone)
-			{
-			case 0:
-				GameObject = Aimbot::Target->head_bone;
-				break;
-			case 1:
-				GameObject = Aimbot::Target->chest_bone;
-				break;
-			default:
-				GameObject = Aimbot::Target->head_bone;
-				break;
-			}
-
-			if (!GameObject) return;
-
-			UnityEngine::Transform* Transform = UnityEngine::GameObject::GetTransform(GameObject);
-			if (!Transform) return;
-
-			Vector3 BonePosition = UnityEngine::Transform::GetPosition(Transform);
-			if (!BonePosition) return;
-
-			BonePosition.y += 0.2f;
-
-			Vector3 CameraPosition = UnityEngine::Transform::GetPosition(GameControll->transform_cam);
-
-			Vector2 CalculateAngle = Aimbot::CalculateAngle(CameraPosition, BonePosition);
+		if (Aimbot::Target && !Config::Aimbot::Silent) {
+			Vector2 CalculateAngle = Aimbot::CalculateAngle(UnityEngine::Transform::GetPosition(GameControll->transform_cam), Aimbot::Target);
 			if (!CalculateAngle) return;
 
 			GameControll->view_angle = CalculateAngle;
 		}
 	}
+
+	static inline Vector3 Target = { 0.f, 0.f, 0.f };
 private:
 	static inline float BestFov = Config::Aimbot::Fov;
-	static inline PlayerData* Target = nullptr;
 	static inline std::vector<PlayerData*> Players{};
 
 	static void InitializeStaticVariables() {
 		Aimbot::BestFov = Config::Aimbot::Fov;
-		Aimbot::Target = nullptr;
+		Aimbot::Target = { 0.f, 0.f, 0.f };
 	}
 
 	static Vector2 CalculateAngle(Vector3 src, Vector3 dst) {

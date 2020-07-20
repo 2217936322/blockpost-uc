@@ -5,6 +5,8 @@ class PLHKlass;
 
 #define STATIC_INLINE static inline
 
+#define IL2CPP_ARRAY_MAX_SIZE 65535
+
 #define VALIDPAGE_START 0x10000
 #define VALIDPAGE_END 0x7FFFFFFF
 
@@ -82,6 +84,11 @@ public:
 		Utils::EXIT_FAILURE_WITH_MSG(std::string{ KlassName + " not found" });
 		return nullptr;
 	}
+
+	template<typename T, typename... TypeArgs>
+	static constexpr T FUNCTION_CAST(std::uintptr_t Offset, TypeArgs... type_args) {
+		return reinterpret_cast<T(*)(TypeArgs...)>(Offset)(type_args...);
+	};
 
 	template <class T> static VOID SAFE_RELEASE(T*& Pointer)
 	{

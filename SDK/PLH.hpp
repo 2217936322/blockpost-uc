@@ -27,7 +27,7 @@ public:
 struct PlayerData_Array {
 	std::byte pad[12];
 	std::uintptr_t MaxLength;
-	PlayerData* Items[65535];
+	PlayerData* Items[IL2CPP_ARRAY_MAX_SIZE];
 };
 
 class PLH_StaticFields {

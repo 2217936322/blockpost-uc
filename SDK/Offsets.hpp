@@ -22,8 +22,18 @@ namespace Offsets {
 			inline std::uintptr_t DrawTextColor = Memory::MAKE_RVA(0x776190);
 		}
 
+		namespace Input {
+			inline std::uintptr_t GetKey = Memory::MAKE_RVA(0x34B960);
+		}
+
+		namespace Object {
+			inline std::uintptr_t GetName = Memory::MAKE_RVA(0x3D3450);
+		}
+
 		namespace Texture {
 			inline std::uintptr_t GenerateTexture = Memory::MAKE_RVA(0x662F60);
+			inline std::uintptr_t SetPixel = Memory::MAKE_RVA(0x3E40D0);
+			inline std::uintptr_t Apply = Memory::MAKE_RVA(0x3E3600);
 		}
 
 		namespace Screen {
@@ -58,5 +68,6 @@ namespace Offsets {
 		inline LPVOID Update = Memory::MAKE_RVA_PTR<VOID>(0x6B7BB0);
 		inline LPVOID GUI = Memory::MAKE_RVA_PTR<VOID>(0x6A87E0);
 		inline LPVOID GetKeyUp = Memory::MAKE_RVA_PTR<VOID>(0x34B9B0);
+		inline LPVOID Raycast = Memory::MAKE_RVA_PTR<VOID>(0x6AB470);
 	}
 }

@@ -17,18 +17,20 @@ HRESULT WINAPI Hooks::HookPresent(IDXGISwapChain* SwapChain, UINT SyncInterval, 
 		ImGui::CreateContext();
 
 		Hooks::GetImmediateContextFromSwapChain(SwapChain);
-		if (!Hooks::DX11Device || !Hooks::DX11DeviceContext) return Hooks::Original_D3D11Present(SwapChain, SyncInterval, Flags);
 
-		Hooks::CreateRenderTargetView(SwapChain);
+		if (Hooks::DX11Device && Hooks::DX11DeviceContext) {
+			Hooks::CreateRenderTargetView(SwapChain);
 
-		ImGui_ImplWin32_Init(Hooks::GAME_HWND);
-		ImGui_ImplDX11_Init(Hooks::DX11Device, Hooks::DX11DeviceContext);
+			ImGui_ImplWin32_Init(Hooks::GAME_HWND);
+			ImGui_ImplDX11_Init(Hooks::DX11Device, Hooks::DX11DeviceContext);
 
-		ImGui::StyleColorsDark();
+			ImGui::StyleColorsDark();
 
-		if (!Hooks::WND_PROC)
-			Hooks::WND_PROC = WNDPROC(SetWindowLongPtrA(Hooks::GAME_HWND, GWLP_WNDPROC, LONG_PTR(Hooks::WndProc)));
+			if (!Hooks::WND_PROC) Hooks::WND_PROC = WNDPROC(SetWindowLongPtrA(Hooks::GAME_HWND, GWLP_WNDPROC, LONG_PTR(Hooks::WndProc)));
+		}
 	}
+
+	if (!Hooks::DX11Device || !Hooks::DX11DeviceContext) return Hooks::Original_D3D11Present(SwapChain, SyncInterval, Flags);
 
 	Resolution ScreenResolution = {
 		static_cast<std::int32_t>(ImGui::GetIO().DisplaySize.x * ImGui::GetIO().DisplayFramebufferScale.x),
@@ -117,22 +119,12 @@ DWORD WINAPI Hooks::HookDirectX11()
 	return S_OK;
 }
 
-VOID Hooks::OnUpdate(LPVOID instance) {
-	Hooks::Original_OnUpdate(instance);
+VOID Hooks::Update(LPVOID instance) {
+	Hooks::Original_Update(instance);
 
 	GameManager->DisableInput(Menu::Open);
 	Aimbot::Run();
-
-	Controll_StaticFields* GameControll = GameManager->GetGameControll();
-	if (!GameControll) return;
-
-	if (!Config::Misc::CameraFov) {
-		if (GameControll->camera)
-			Config::Misc::CameraFov = UnityEngine::Camera::FieldOfView(GameControll->camera);
-	}
-	else
-		if (GameControll->camera)
-			UnityEngine::Camera::SetFieldOfView(GameControll->camera, Config::Misc::CameraFov);
+	Misc::Run();
 }
 
 VOID Hooks::OnGUI(LPVOID instance) {
@@ -142,7 +134,17 @@ VOID Hooks::OnGUI(LPVOID instance) {
 }
 
 BOOL Hooks::GetKeyUp(std::int32_t key) {
-	return key == Manager::KeyCode::Insert ? false : Hooks::Original_GetKeyUp(key); // The best anti-cheat in the world
+	return key == Enums::KeyCode::Insert ? false : Hooks::Original_GetKeyUp(key); // The best anti-cheat in the world
+}
+
+BOOL Hooks::Raycast(Vector3 pos, Vector3 dir, UnityEngine::RaycastHit& hit, float dist) {
+	if (!Aimbot::Target && Config::Misc::HitDistanceLimit)
+		dist = INFINITY;
+
+	if (Config::Aimbot::Silent && Aimbot::Target)
+		pos = Aimbot::Target;
+
+	return Hooks::Original_Raycast(pos, dir, hit, dist);
 }
 
 VOID Hooks::Initialize() const
@@ -150,14 +152,17 @@ VOID Hooks::Initialize() const
 	if (MH_Initialize() != MH_OK)
 		Utils::EXIT_FAILURE_WITH_MSG("MH Initialize Error");
 
-	if (MH_CreateHook(Offsets::Hooks::Update, &Hooks::OnUpdate, reinterpret_cast<LPVOID*>(&Hooks::Original_OnUpdate)) != MH_OK)
-		Utils::EXIT_FAILURE_WITH_MSG("Hooks::OnUpdate Error");
+	if (MH_CreateHook(Offsets::Hooks::Update, &Hooks::Update, reinterpret_cast<LPVOID*>(&Hooks::Original_Update)) != MH_OK)
+		Utils::EXIT_FAILURE_WITH_MSG("Hooks::Update Error");
 
 	if (MH_CreateHook(Offsets::Hooks::GUI, &Hooks::OnGUI, reinterpret_cast<LPVOID*>(&Hooks::Original_OnGUI)) != MH_OK)
 		Utils::EXIT_FAILURE_WITH_MSG("Hooks::OnGUI Error");
 
 	if (MH_CreateHook(Offsets::Hooks::GetKeyUp, &Hooks::GetKeyUp, reinterpret_cast<LPVOID*>(&Hooks::Original_GetKeyUp)) != MH_OK)
 		Utils::EXIT_FAILURE_WITH_MSG("Hooks::GetKeyUp Error");
+
+	if (MH_CreateHook(Offsets::Hooks::Raycast, &Hooks::Raycast, reinterpret_cast<LPVOID*>(&Hooks::Original_Raycast)) != MH_OK)
+		Utils::EXIT_FAILURE_WITH_MSG("Hooks::Raycast Error");
 
 	Hooks::HookDirectX11();
 
@@ -173,6 +178,8 @@ VOID Hooks::Release() const
 
 	Memory::SAFE_RELEASE(Hooks::DX11Device);
 	Memory::SAFE_RELEASE(Hooks::DX11DeviceContext);
+
+	SetWindowLongPtrA(Hooks::GAME_HWND, GWLP_WNDPROC, LONG_PTR(Hooks::WND_PROC));
 
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();

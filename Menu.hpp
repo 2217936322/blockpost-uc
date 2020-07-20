@@ -5,9 +5,28 @@ constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWin
 namespace Menu {
 	static inline bool Open = true;
 
+	namespace Utils {
+		inline void DisabledInput() {
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+		}
+
+		inline void EndDisabledInput() {
+			ImGui::PopItemFlag();
+			ImGui::PopStyleVar();
+		}
+
+		inline void SeparatorWithPadding(ImVec2 padding) {
+			ImGui::Dummy(padding);
+			ImGui::Separator();
+			ImGui::Dummy(padding);
+		}
+	}
+
 	inline void AimbotWindow() {
 		ImGui::Checkbox("Enabled", &Config::Aimbot::Enabled);
 		ImGui::SameLine();
+		ImGui::Checkbox("Silent", &Config::Aimbot::Silent);
 		ImGui::Checkbox("Draw Fov", &Config::Aimbot::DrawFov);
 		ImGui::Checkbox("Visible check", &Config::Aimbot::Visible);
 		ImGui::Checkbox("Spawn protect", &Config::Aimbot::SpawnProtect);
@@ -24,31 +43,31 @@ namespace Menu {
 
 		if (ImGui::TreeNode("Box Colors"))
 		{
-			static float BoxColor[4] = { Config::ESP::BoxColor.r, Config::ESP::BoxColor.g, Config::ESP::BoxColor.b, Config::ESP::BoxColor.a };
+			static float BoxColor[4] = { Config::ESP::Colors::Box.r, Config::ESP::Colors::Box.g, Config::ESP::Colors::Box.b, Config::ESP::Colors::Box.a };
 
 			if (ImGui::ColorEdit4("Box", BoxColor, ImGuiColorEditFlags_None)) {
-				Config::ESP::BoxColor.r = BoxColor[0];
-				Config::ESP::BoxColor.g = BoxColor[1];
-				Config::ESP::BoxColor.b = BoxColor[2];
-				Config::ESP::BoxColor.a = BoxColor[3];
+				Config::ESP::Colors::Box.r = BoxColor[0];
+				Config::ESP::Colors::Box.g = BoxColor[1];
+				Config::ESP::Colors::Box.b = BoxColor[2];
+				Config::ESP::Colors::Box.a = BoxColor[3];
 			}
 
-			static float VisibleBoxColor[4] = { Config::ESP::VisibleBoxColor.r, Config::ESP::VisibleBoxColor.g, Config::ESP::VisibleBoxColor.b, Config::ESP::VisibleBoxColor.a };
+			static float VisibleBoxColor[4] = { Config::ESP::Colors::VisibleBox.r, Config::ESP::Colors::VisibleBox.g, Config::ESP::Colors::VisibleBox.b, Config::ESP::Colors::VisibleBox.a };
 
 			if (ImGui::ColorEdit4("Visible Box", VisibleBoxColor, ImGuiColorEditFlags_None)) {
-				Config::ESP::VisibleBoxColor.r = VisibleBoxColor[0];
-				Config::ESP::VisibleBoxColor.g = VisibleBoxColor[1];
-				Config::ESP::VisibleBoxColor.b = VisibleBoxColor[2];
-				Config::ESP::VisibleBoxColor.a = VisibleBoxColor[3];
+				Config::ESP::Colors::VisibleBox.r = VisibleBoxColor[0];
+				Config::ESP::Colors::VisibleBox.g = VisibleBoxColor[1];
+				Config::ESP::Colors::VisibleBox.b = VisibleBoxColor[2];
+				Config::ESP::Colors::VisibleBox.a = VisibleBoxColor[3];
 			}
 
-			static float SpawnProtectBoxColor[4] = { Config::ESP::SpawnProtectBoxColor.r, Config::ESP::SpawnProtectBoxColor.g, Config::ESP::SpawnProtectBoxColor.b, Config::ESP::SpawnProtectBoxColor.a };
+			static float SpawnProtectBoxColor[4] = { Config::ESP::Colors::SpawnProtectBox.r, Config::ESP::Colors::SpawnProtectBox.g, Config::ESP::Colors::SpawnProtectBox.b, Config::ESP::Colors::SpawnProtectBox.a };
 
 			if (ImGui::ColorEdit4("Spawn Protect Box", SpawnProtectBoxColor, ImGuiColorEditFlags_None)) {
-				Config::ESP::SpawnProtectBoxColor.r = SpawnProtectBoxColor[0];
-				Config::ESP::SpawnProtectBoxColor.g = SpawnProtectBoxColor[1];
-				Config::ESP::SpawnProtectBoxColor.b = SpawnProtectBoxColor[2];
-				Config::ESP::SpawnProtectBoxColor.a = SpawnProtectBoxColor[3];
+				Config::ESP::Colors::SpawnProtectBox.r = SpawnProtectBoxColor[0];
+				Config::ESP::Colors::SpawnProtectBox.g = SpawnProtectBoxColor[1];
+				Config::ESP::Colors::SpawnProtectBox.b = SpawnProtectBoxColor[2];
+				Config::ESP::Colors::SpawnProtectBox.a = SpawnProtectBoxColor[3];
 			}
 
 			ImGui::TreePop();
@@ -56,17 +75,13 @@ namespace Menu {
 	}
 
 	inline void MiscWindow() {
-		if (!UnityEngine::Client::IsConnected()) {
-			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-		}
+		ImGui::Checkbox("Remove hit distance limit", &Config::Misc::HitDistanceLimit);
+
+		if (!UnityEngine::Client::IsConnected()) Menu::Utils::DisabledInput();
 
 		ImGui::SliderFloat("Camera fov", &Config::Misc::CameraFov, 10.0f, 180.0f, "%.2f", 1.f);
 
-		if (!UnityEngine::Client::IsConnected()) {
-			ImGui::PopItemFlag();
-			ImGui::PopStyleVar();
-		}
+		if (!UnityEngine::Client::IsConnected()) Menu::Utils::EndDisabledInput();
 	}
 
 	inline void Theme() {
@@ -139,12 +154,6 @@ namespace Menu {
 		style->DisplaySafeAreaPadding = ImVec2(4, 4);
 	}
 
-	inline void SeparatorWithPadding(ImVec2 padding) {
-		ImGui::Dummy(padding);
-		ImGui::Separator();
-		ImGui::Dummy(padding);
-	}
-
 	inline void Render() {
 		if (!Menu::Open) return;
 
@@ -157,13 +166,13 @@ namespace Menu {
 			AimbotWindow(); ImGui::TreePop();
 		}
 
-		Menu::SeparatorWithPadding(ImVec2(0, 4));
+		Menu::Utils::SeparatorWithPadding(ImVec2(0, 4));
 
 		if (ImGui::TreeNode("ESP")) {
 			ESPWindow(); ImGui::TreePop();
 		}
 
-		Menu::SeparatorWithPadding(ImVec2(0, 4));
+		Menu::Utils::SeparatorWithPadding(ImVec2(0, 4));
 
 		if (ImGui::TreeNode("Misc")) {
 			MiscWindow(); ImGui::TreePop();
