@@ -3,7 +3,7 @@
 class Aimbot {
 public:
 	static void Run() {
-		InitializeStaticVariables();
+		Aimbot::InitializeStaticVariables();
 
 		if (!Config::Aimbot::Enabled) return;
 		if (!UnityEngine::Input::GetKey(Config::Aimbot::Key)) return;
@@ -41,13 +41,13 @@ public:
 
 			CameraPosition += CameraForward;
 
-			Vector3 HeadW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, BonePosition);
-			if (HeadW2S.z < 1.f) continue;
+			Vector3 BoneW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, BonePosition);
+			if (BoneW2S.z < 1.f) continue;
 
 			Vector3 CameraW2S = UnityEngine::Camera::WorldToScreen(GameControll->camera, CameraPosition);
 			CameraW2S.y = UnityEngine::Screen::GetResolution().height - CameraW2S.y;
 
-			Vector2 Camera2D{ CameraW2S.x - HeadW2S.x, CameraW2S.y - HeadW2S.y };
+			Vector2 Camera2D{ CameraW2S.x - BoneW2S.x, CameraW2S.y - BoneW2S.y };
 
 			if (Camera2D.length() < Aimbot::BestFov) {
 				Aimbot::BestFov = Camera2D.length();
@@ -63,10 +63,10 @@ public:
 		}
 	}
 
-	static inline Vector3 Target = { 0.f, 0.f, 0.f };
+	STATIC_INLINE Vector3 Target = { 0.f, 0.f, 0.f };
 private:
-	static inline float BestFov = Config::Aimbot::Fov;
-	static inline std::vector<PlayerData*> Players{};
+	STATIC_INLINE float BestFov = Config::Aimbot::Fov;
+	STATIC_INLINE std::vector<PlayerData*> Players{};
 
 	static void InitializeStaticVariables() {
 		Aimbot::BestFov = Config::Aimbot::Fov;
