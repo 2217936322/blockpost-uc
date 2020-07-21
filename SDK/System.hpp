@@ -10,7 +10,7 @@ public:
 	};
 
 	static std::shared_ptr<SystemString> CreateString(std::wstring UnicodeString) {
-		std::shared_ptr<SystemString> SystemStringPTR = std::make_unique<SystemString>();
+		std::shared_ptr<SystemString> SystemStringPTR = std::make_shared<SystemString>();
 
 		SystemStringPTR->StringLength = UnicodeString.length();
 		wcscpy(SystemStringPTR->UnicodeString, UnicodeString.c_str());

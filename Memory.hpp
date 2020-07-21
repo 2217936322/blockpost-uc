@@ -86,8 +86,8 @@ public:
 	}
 
 	template<typename T, typename... TypeArgs>
-	static constexpr T FUNCTION_CAST(std::uintptr_t Offset, TypeArgs... type_args) {
-		return reinterpret_cast<T(*)(TypeArgs...)>(Offset)(type_args...);
+	static constexpr T FUNCTION_CAST(std::uintptr_t Offset, TypeArgs&... type_args) {
+		return reinterpret_cast<T(*)(TypeArgs...)>(Offset)(std::forward<TypeArgs>(type_args)...);
 	};
 
 	template <class T> static VOID SAFE_RELEASE(T*& Pointer)
